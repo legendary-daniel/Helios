@@ -416,7 +416,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Documentation**: Check the `docs/` folder
 - **Issues**: Open GitHub issues for bugs
 - **Discussions**: Use GitHub Discussions for questions
-- **Email**: contact@helios-trading.com
+- **Email**: danielannan212@gmail.com
+  
 
 ## Changelog
 
