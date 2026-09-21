@@ -1,0 +1,118 @@
+{
+  "mt5": {
+    "login": 0,
+    "password": "",
+    "server": "",
+    "timeout": 60000,
+    "portable": false,
+    "path": ""
+  },
+  "data": {
+    "symbols": [
+      "EURUSD",
+      "GBPUSD", 
+      "USDJPY",
+      "AUDUSD",
+      "XAUUSD",
+      "BTCUSD"
+
+    ],
+    "timeframes": [
+      "M5",
+      "M15",
+      "M30",
+      "H1",
+      "H4"
+    ],
+    "lookback_days": 365,
+    "real_time_update_interval": 1.0,
+    "historical_data_path": "data/historical",
+    "tick_data_enabled": false
+  },
+  "ml": {
+    "feature_window": 50,
+    "prediction_window": 10,
+    "model_type": "ensemble",
+    "retrain_interval_hours": 6,
+    "confidence_threshold": 0.7,
+    "models_path": "models",
+    "ensemble_weights_path": "models/ensemble_weights.json"
+  },
+  "strategy": {
+    "default_strategy": "trend_following",
+    "max_concurrent_strategies": 3,
+    "strategy_rotation_enabled": true,
+    "min_strategy_performance": 0.05,
+    "strategies": [
+      {
+        "name": "trend_following",
+        "enabled": true,
+        "priority": 1,
+        "parameters": {
+          "fast_ema": 12,
+          "slow_ema": 26,
+          "rsi_period": 14,
+          "rsi_oversold": 30,
+          "rsi_overbought": 70
+        }
+      },
+      {
+        "name": "mean_reversion",
+        "enabled": true,
+        "priority": 2,
+        "parameters": {
+          "bb_period": 20,
+          "bb_std": 2,
+          "rsi_period": 14,
+          "rsi_oversold": 25,
+          "rsi_overbought": 75
+        }
+      },
+      {
+        "name": "breakout",
+        "enabled": true,
+        "priority": 3,
+        "parameters": {
+          "breakout_period": 20,
+          "volume_threshold": 1.5,
+          "price_momentum": 0.01
+        }
+      },
+      {
+        "name": "scalping",
+        "enabled": false,
+        "priority": 4,
+        "parameters": {
+          "tick_threshold": 5,
+          "time_limit_seconds": 300,
+          "profit_target": 0.001
+        }
+      }
+    ]
+  },
+  "risk": {
+    "max_risk_per_trade": 0.02,
+    "max_daily_loss": 0.05,
+    "max_portfolio_risk": 0.10,
+    "max_open_positions": 5,
+    "position_sizing_method": "kelly",
+    "stop_loss_atr_multiplier": 2.0,
+    "take_profit_ratio": 2.0
+  },
+  "meta_learning": {
+    "market_regime_detection": true,
+    "volatility_analysis": true,
+    "time_based_regimes": true,
+    "strategy_performance_tracking": true,
+    "adaptation_interval_hours": 4,
+    "regime_lookback_periods": 20
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file_path": "logs/helios_trading.log",
+    "max_file_size": 10485760,
+    "backup_count": 5,
+    "console_output": true
+  }
+}

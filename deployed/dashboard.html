@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helios ML Trading System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000000;
+            color: #E4E4E7;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .title {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -2%;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #00E0FF, #00A8C0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 24px;
+            color: #A1A1AA;
+            margin-bottom: 32px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .status-card {
+            background: #121212;
+            border: 1px solid #1E1E1E;
+            border-radius: 8px;
+            padding: 24px;
+            transition: all 250ms ease;
+        }
+
+        .status-card:hover {
+            border-color: #00E0FF;
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #E4E4E7;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-content {
+            font-size: 14px;
+            color: #A1A1AA;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #1E1E1E;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #A1A1AA;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #E4E4E7;
+        }
+
+        .metric-value.positive {
+            color: #10B981;
+        }
+
+        .metric-value.negative {
+            color: #EF4444;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 48px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 200ms ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #00E0FF;
+            color: #000000;
+        }
+
+        .btn-primary:hover {
+            background: #00A8C0;
+            box-shadow: 0 0 16px 0px rgba(0, 224, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #1E1E1E;
+            color: #E4E4E7;
+            border: 1px solid #333333;
+        }
+
+        .btn-secondary:hover {
+            background: #2A2A2A;
+            border-color: #00E0FF;
+        }
+
+        .btn-danger {
+            background: #EF4444;
+            color: #FFFFFF;
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+            transform: translateY(-2px);
+        }
+
+        .signals-section {
+            background: #121212;
+            border: 1px solid #1E1E1E;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .signals-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #E4E4E7;
+        }
+
+        .signals-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .signal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #1E1E1E;
+        }
+
+        .signal-item:last-child {
+            border-bottom: none;
+        }
+
+        .signal-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .signal-symbol {
+            font-weight: 600;
+            color: #E4E4E7;
+        }
+
+        .signal-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .signal-type.buy {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+        }
+
+        .signal-type.sell {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+        }
+
+        .signal-confidence {
+            font-size: 12px;
+            color: #A1A1AA;
+        }
+
+        .chart-container {
+            background: #121212;
+            border: 1px solid #1E1E1E;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #E4E4E7;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        .connection-status.connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid #10B981;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid #EF4444;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 48px;
+            color: #A1A1AA;
+        }
+
+        .spinner {
+            border: 2px solid #1E1E1E;
+            border-top: 2px solid #00E0FF;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .glow {
+            box-shadow: 0 0 16px 0px rgba(0, 224, 255, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .title {
+                font-size: 32px;
+            }
+
+            .subtitle {
+                font-size: 18px;
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status" id="connectionStatus">Connecting...</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Helios ML Trading System</h1>
+            <p class="subtitle">Automate. Adapt. Ascend.</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn" onclick="startTrading()">
+                Start Trading
+            </button>
+            <button class="btn btn-secondary" id="stopBtn" onclick="stopTrading()">
+                Stop Trading
+            </button>
+            <button class="btn btn-secondary" onclick="refreshData()">
+                Refresh Data
+            </button>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-card">
+                <div class="card-title">
+                    <span>System Status</span>
+                </div>
+                <div class="card-content">
+                    <div class="metric">
+                        <span class="metric-label">Status</span>
+                        <span class="metric-value" id="systemStatus">Loading...</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Trading Enabled</span>
+                        <span class="metric-value" id="tradingEnabled">Loading...</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Uptime</span>
+                        <span class="metric-value" id="uptime">Loading...</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Active Connections</span>
+                        <span class="metric-value" id="activeConnections">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="card-title">
+                    <span>Performance Metrics</span>
+                </div>
+                <div class="card-content">
+                    <div class="metric">
+                        <span class="metric-label">Total Trades</span>
+                        <span class="metric-value" id="totalTrades">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Successful Trades</span>
+                        <span class="metric-value" id="successfulTrades">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Success Rate</span>
+                        <span class="metric-value" id="successRate">0%</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Daily P&L</span>
+                        <span class="metric-value" id="dailyPnL">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="card-title">
+                    <span>Account Info</span>
+                </div>
+                <div class="card-content">
+                    <div class="metric">
+                        <span class="metric-label">Balance</span>
+                        <span class="metric-value" id="accountBalance">$0.00</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Equity</span>
+                        <span class="metric-value" id="accountEquity">$0.00</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Open Positions</span>
+                        <span class="metric-value" id="openPositions">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Free Margin</span>
+                        <span class="metric-value" id="freeMargin">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="card-title">
+                    <span>ML Models</span>
+                </div>
+                <div class="card-content">
+                    <div class="metric">
+                        <span class="metric-label">Models Loaded</span>
+                        <span class="metric-value" id="modelsLoaded">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Active Strategies</span>
+                        <span class="metric-value" id="activeStrategies">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Market Regime</span>
+                        <span class="metric-value" id="marketRegime">Unknown</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Last Training</span>
+                        <span class="metric-value" id="lastTraining">Never</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3 class="chart-title">Performance Chart</h3>
+            <div id="performanceChart">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading performance data...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="signals-section">
+            <h3 class="signals-title">Recent Trading Signals</h3>
+            <div class="signals-list" id="signalsList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading signals...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // WebSocket connection
+        let ws = null;
+        let reconnectInterval = null;
+        let performanceChart = null;
+        let signalsData = [];
+        let isConnected = false;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            connectWebSocket();
+            loadInitialData();
+            setupPeriodicUpdates();
+        });
+
+        function connectWebSocket() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.host}/ws/mt5`;
+            
+            try {
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = function(event) {
+                    console.log('WebSocket connected');
+                    isConnected = true;
+                    updateConnectionStatus(true);
+                    clearInterval(reconnectInterval);
+                };
+
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                };
+
+                ws.onclose = function(event) {
+                    console.log('WebSocket disconnected');
+                    isConnected = false;
+                    updateConnectionStatus(false);
+                    startReconnection();
+                };
+
+                ws.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    isConnected = false;
+                    updateConnectionStatus(false);
+                };
+            } catch (error) {
+                console.error('Failed to connect WebSocket:', error);
+                updateConnectionStatus(false);
+                startReconnection();
+            }
+        }
+
+        function startReconnection() {
+            if (!reconnectInterval) {
+                reconnectInterval = setInterval(() => {
+                    if (!isConnected) {
+                        console.log('Attempting to reconnect...');
+                        connectWebSocket();
+                    }
+                }, 5000);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connectionStatus');
+            if (connected) {
+                statusElement.textContent = 'Connected';
+                statusElement.className = 'connection-status connected';
+            } else {
+                statusElement.textContent = 'Disconnected';
+                statusElement.className = 'connection-status disconnected';
+            }
+        }
+
+        function handleWebSocketMessage(data) {
+            console.log('Received message:', data);
+            
+            switch (data.type) {
+                case 'trade_result':
+                    updateTradeResults(data.data);
+                    break;
+                case 'periodic_status':
+                case 'status_response':
+                    updateSystemStatus(data.data);
+                    break;
+                case 'heartbeat':
+                    // Update last seen time
+                    break;
+                case 'error':
+                    console.error('Server error:', data.message);
+                    break;
+            }
+        }
+
+        async function loadInitialData() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+                updateSystemStatus(status);
+
+                // Load recent signals
+                const signalsResponse = await fetch('/api/signals');
+                const signals = await signalsResponse.json();
+                updateSignalsList(signals.signals);
+
+                // Load strategies status
+                const strategiesResponse = await fetch('/api/strategies');
+                const strategies = await strategiesResponse.json();
+                updateStrategiesStatus(strategies);
+
+            } catch (error) {
+                console.error('Error loading initial data:', error);
+            }
+        }
+
+        function setupPeriodicUpdates() {
+            // Update data every 10 seconds
+            setInterval(() => {
+                loadInitialData();
+            }, 10000);
+        }
+
+        function updateSystemStatus(status) {
+            document.getElementById('systemStatus').textContent = status.trading_enabled ? 'Running' : 'Stopped';
+            document.getElementById('tradingEnabled').textContent = status.trading_enabled ? 'Yes' : 'No';
+            document.getElementById('totalTrades').textContent = status.total_trades || 0;
+            document.getElementById('successfulTrades').textContent = status.successful_trades || 0;
+            document.getElementById('successRate').textContent = `${((status.successful_trades / Math.max(status.total_trades, 1)) * 100).toFixed(1)}%`;
+            document.getElementById('dailyPnL').textContent = `$${(status.daily_pnl || 0).toFixed(2)}`;
+            document.getElementById('openPositions').textContent = status.open_positions || 0;
+            
+            // Account info
+            if (status.account_info) {
+                document.getElementById('accountBalance').textContent = `$${(status.account_info.balance || 0).toFixed(2)}`;
+                document.getElementById('accountEquity').textContent = `$${(status.account_info.equity || 0).toFixed(2)}`;
+                document.getElementById('freeMargin').textContent = `$${(status.account_info.free_margin || 0).toFixed(2)}`;
+            }
+
+            // ML models
+            document.getElementById('modelsLoaded').textContent = (status.ml_models_loaded || []).length;
+            document.getElementById('activeStrategies').textContent = (status.strategies || []).length;
+            document.getElementById('marketRegime').textContent = status.market_regime || 'Unknown';
+            
+            // Update uptime if available
+            if (status.uptime && status.uptime.hours) {
+                document.getElementById('uptime').textContent = `${status.uptime.hours.toFixed(1)}h`;
+            }
+        }
+
+        function updateSignalsList(signals) {
+            const signalsList = document.getElementById('signalsList');
+            
+            if (!signals || signals.length === 0) {
+                signalsList.innerHTML = '<p style="text-align: center; color: #A1A1AA;">No recent signals</p>';
+                return;
+            }
+
+            signalsList.innerHTML = signals.slice(0, 10).map(signal => `
+                <div class="signal-item">
+                    <div class="signal-info">
+                        <span class="signal-symbol">${signal.symbol || 'N/A'}</span>
+                        <span class="signal-type ${signal.signal_type}">${signal.signal_type?.toUpperCase() || 'HOLD'}</span>
+                        <span class="signal-confidence">${(signal.confidence * 100).toFixed(1)}%</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: #E4E4E7;">${signal.price?.toFixed(5) || 'N/A'}</div>
+                        <div style="color: #A1A1AA; font-size: 12px;">${signal.strategy || 'Unknown'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStrategiesStatus(strategies) {
+            // Update strategies display if needed
+            console.log('Strategies status:', strategies);
+        }
+
+        function updateTradeResults(tradeData) {
+            // Update local data and refresh display
+            loadInitialData();
+        }
+
+        async function startTrading() {
+            try {
+                const response = await fetch('/api/start-trading', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.status === 'started') {
+                    showNotification('Trading system started successfully', 'success');
+                    loadInitialData();
+                } else if (result.status === 'already_running') {
+                    showNotification('Trading system is already running', 'info');
+                } else {
+                    showNotification(result.message || 'Failed to start trading', 'error');
+                }
+            } catch (error) {
+                console.error('Error starting trading:', error);
+                showNotification('Error starting trading system', 'error');
+            }
+        }
+
+        async function stopTrading() {
+            try {
+                const response = await fetch('/api/stop-trading', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.status === 'stopped') {
+                    showNotification('Trading system stopped successfully', 'success');
+                    loadInitialData();
+                } else if (result.status === 'already_stopped') {
+                    showNotification('Trading system is not running', 'info');
+                } else {
+                    showNotification(result.message || 'Failed to stop trading', 'error');
+                }
+            } catch (error) {
+                console.error('Error stopping trading:', error);
+                showNotification('Error stopping trading system', 'error');
+            }
+        }
+
+        async function refreshData() {
+            showNotification('Refreshing data...', 'info');
+            loadInitialData();
+            
+            // Simulate chart data update
+            updatePerformanceChart();
+        }
+
+        function updatePerformanceChart() {
+            // This would normally fetch real performance data
+            // For now, we'll show a placeholder chart
+            const chartContainer = document.getElementById('performanceChart');
+            
+            if (!performanceChart) {
+                const ctx = document.createElement('canvas');
+                ctx.id = 'performanceChartCanvas';
+                chartContainer.innerHTML = '';
+                chartContainer.appendChild(ctx);
+                
+                performanceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 20}, (_, i) => `${i}h`),
+                        datasets: [{
+                            label: 'Account Balance',
+                            data: Array.from({length: 20}, () => Math.random() * 1000 + 10000),
+                            borderColor: '#00E0FF',
+                            backgroundColor: 'rgba(0, 224, 255, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#E4E4E7'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: '#A1A1AA'
+                                },
+                                grid: {
+                                    color: '#1E1E1E'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#A1A1AA'
+                                },
+                                grid: {
+                                    color: '#1E1E1E'
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                // Update existing chart with new data
+                performanceChart.data.datasets[0].data = Array.from({length: 20}, () => Math.random() * 1000 + 10000);
+                performanceChart.update('none');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 24px;
+                padding: 16px 24px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 1001;
+                max-width: 300px;
+                transition: all 300ms ease;
+            `;
+
+            if (type === 'success') {
+                notification.style.background = 'rgba(16, 185, 129, 0.9)';
+            } else if (type === 'error') {
+                notification.style.background = 'rgba(239, 68, 68, 0.9)';
+            } else {
+                notification.style.background = 'rgba(0, 224, 255, 0.9)';
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+                notification.style.opacity = '1';
+            }, 100);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            if (ws) {
+                ws.close();
+            }
+        });
+    </script>
+    <Footer>
+        <div style="text-align: center; padding: 16px; color: #f3f3f8; font-size: 12px;">
+            &copy; 2024 Helios Trading Systems. All rights reserved. developed by <a href="https://legendarystudios.dev" target="_blank" style="color: #00E0FF; text-decoration: none;">Legendary Team</a>
+        </div>
+       
+    </Footer>
+</body>
+</html>
